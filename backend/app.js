@@ -1,5 +1,16 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
+const mongoose = require('mongoose');
+
+const Product = require('./models/Product');
+
+mongoose.connect('your connexion config',
+  { useNewUrlParser: true,
+    useUnifiedTopology: true })
+  .then(() => console.log('Connexion à MongoDB réussie !'))
+  .catch(() => console.log('Connexion à MongoDB échouée !'));
+
 app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,34 +19,15 @@ app.use((req, res, next) => {
     next();
   });
   app.post('/api/products', (req, res, next) => {
-    console.log(req.body);
-    res.status(201).json({
-        _id: 'oeihfzeoi',
-        name: "hello product",
-        description: "test",
-        price: "150",
-        inStock: true
+    delete req.body._id;
+    const product = new Product({
+        ...req.body
     });
+    product.save()
+      .then(() => res.status(201).json({product}))
+      .catch(error => res.status(400).json({ error }));
 });
-app.get('/api/products', (req, res, next) => {
-    const products = [
-      {
-        _id: 'oeihfzeoi',
-        name: "hello",
-        description: "test",
-        price: "100",
-        inStock: true
-      },
-      {
-        _id: 'rgergeg',
-        name: "hello 2",
-        description: "test",
-        price: "100",
-        inStock: true
-      }
-    ];
-    res.status(200).json(products);
-  });
+
 
 
 
